@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Company Architecture — 自律型AI組織アーキテクチャ</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: #f0ebe3; color: #2d2d2d;
+    padding: 30px 20px 50px; font-size: 13px; line-height: 1.5;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  /* ===== HEADER ===== */
+  .main-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; }
+  .main-title { font-size: 24px; font-weight: 900; }
+  .main-title .hl { color: #e8a838; }
+  .nav-links { font-size: 10px; color: #999; letter-spacing: .5px; }
+  .subtitle { font-size: 12px; color: #888; margin-bottom: 28px; }
+
+  /* ===== SECTION ===== */
+  .sec {
+    font-size: 10px; font-weight: 800; letter-spacing: 2px; color: #b8a07a;
+    text-transform: uppercase; margin: 36px 0 14px; padding-left: 2px;
+  }
+  .sec::before {
+    content: ''; display: inline-block; width: 14px; height: 2px;
+    background: #e8a838; vertical-align: middle; margin-right: 8px;
+  }
+
+  /* ===== BADGE ===== */
+  .b {
+    display: inline-block; padding: 2px 9px; border-radius: 10px;
+    font-size: 9px; font-weight: 700; white-space: nowrap;
+  }
+  .b-green  { background: #d4f5e0; color: #1a7a3a; }
+  .b-purple { background: #ede0fc; color: #6a3aaa; }
+  .b-orange { background: #ffe8cc; color: #d35400; }
+  .b-blue   { background: #dbeefe; color: #2a6cb6; }
+  .b-pink   { background: #fce4ec; color: #c2185b; }
+  .b-gold   { background: #fff3cd; color: #8a6d1b; }
+  .b-gray   { background: #eee; color: #777; }
+  .b-red    { background: #fde2e2; color: #c0392b; }
+  .b-teal   { background: #d0f0f0; color: #00695c; }
+
+  /* ===== PHILOSOPHY ===== */
+  .philosophy {
+    background: #1a1a2e; border-radius: 12px; padding: 20px 24px;
+    color: #ccc; font-size: 12px; line-height: 1.8;
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;
+  }
+  .ph-item { text-align: center; }
+  .ph-icon { font-size: 28px; margin-bottom: 4px; }
+  .ph-title { font-size: 13px; font-weight: 800; color: #e8a838; margin-bottom: 2px; }
+  .ph-desc { font-size: 10px; color: #999; }
+  .ph-time { font-size: 22px; font-weight: 900; color: #fff; margin-top: 4px; }
+
+  /* ===== ORG CHART ===== */
+  .org-chart {
+    background: #fffdf7; border: 1px solid #e0ddd5; border-radius: 14px;
+    padding: 24px 20px; text-align: center;
+  }
+  .org-chairman {
+    display: inline-block; background: #1a1a2e; color: #fff; border-radius: 12px;
+    padding: 14px 32px; margin-bottom: 8px; position: relative;
+  }
+  .org-chairman .oc-title { font-size: 10px; color: #e8a838; font-weight: 800; letter-spacing: 1px; }
+  .org-chairman .oc-name { font-size: 16px; font-weight: 900; }
+  .org-chairman .oc-sub { font-size: 9px; color: #999; }
+  .org-line { width: 3px; height: 20px; background: #e8a838; margin: 0 auto; }
+  .org-line-h { display: flex; justify-content: center; align-items: center; margin: 0 auto; }
+  .org-ceo {
+    display: inline-block; background: linear-gradient(135deg, #e8a838, #d4952e);
+    color: #fff; border-radius: 12px; padding: 14px 32px; margin-bottom: 8px;
+    box-shadow: 0 4px 16px rgba(232,168,56,.3);
+  }
+  .org-ceo .oc-title { font-size: 10px; font-weight: 800; letter-spacing: 1px; opacity: .9; }
+  .org-ceo .oc-name { font-size: 16px; font-weight: 900; }
+  .org-ceo .oc-sub { font-size: 9px; opacity: .8; }
+  .org-branch { display: flex; justify-content: center; gap: 0; margin-top: 8px; position: relative; }
+  .org-branch::before {
+    content: ''; position: absolute; top: 0; left: 18%; right: 18%;
+    height: 3px; background: #ddd;
+  }
+  .org-dept {
+    flex: 1; max-width: 200px; text-align: center; position: relative; padding-top: 20px;
+  }
+  .org-dept::before {
+    content: ''; position: absolute; top: 0; left: 50%; width: 3px; height: 20px; background: #ddd;
+  }
+  .org-dept-card {
+    border-radius: 10px; padding: 12px 10px; border: 2px solid #ddd;
+    background: #fff; transition: transform .15s, box-shadow .2s;
+  }
+  .org-dept-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,.08); }
+  .od-cto { border-color: #9f7aea; }
+  .od-coo { border-color: #48bb78; }
+  .od-cmo { border-color: #ec407a; }
+  .od-cfo { border-color: #4a90d9; }
+  .org-dept-card .od-icon { font-size: 24px; }
+  .org-dept-card .od-role { font-size: 11px; font-weight: 900; margin-top: 2px; }
+  .org-dept-card .od-name { font-size: 9px; color: #999; }
+  .org-dept-card .od-tool { font-size: 8px; font-weight: 700; padding: 2px 8px; border-radius: 8px; display: inline-block; margin-top: 4px; }
+  .org-dept-card .od-scope { font-size: 8px; color: #aaa; margin-top: 4px; line-height: 1.4; }
+
+  /* ===== REVENUE LOOP (from Revenue_Engine) ===== */
+  .loop-wrap {
+    background: #fffdf7; border: 1px solid #e0ddd5; border-radius: 12px;
+    padding: 20px; overflow-x: auto;
+  }
+  .loop-ring {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    flex-wrap: wrap; position: relative;
+  }
+  .loop-node {
+    background: #fff; border: 2px solid #ddd; border-radius: 8px;
+    padding: 10px 8px; text-align: center; min-width: 80px; flex-shrink: 0;
+    transition: transform .15s;
+  }
+  .loop-node:hover { transform: translateY(-3px); }
+  .loop-node .ln-ic { font-size: 24px; }
+  .loop-node .ln-label { font-size: 11px; font-weight: 800; margin-top: 2px; }
+  .loop-node .ln-sub { font-size: 9px; color: #999; }
+  .loop-node .ln-auto {
+    font-size: 8px; font-weight: 700; padding: 2px 6px; border-radius: 6px;
+    margin-top: 4px; display: inline-block;
+  }
+  .la-auto { background: #d4f5e0; color: #1a7a3a; }
+  .la-corp { background: #fff3cd; color: #8a6d1b; }
+  .loop-arrow { font-size: 18px; color: #e8a838; font-weight: 700; flex-shrink: 0; padding: 0 2px; }
+  .loop-arrow-back {
+    text-align: center; font-size: 10px; color: #bbb; font-weight: 600;
+    margin-top: 8px; letter-spacing: 2px;
+  }
+
+  /* ===== APPROVAL MATRIX ===== */
+  .approval-matrix {
+    background: #fffdf7; border: 1px solid #e0ddd5; border-radius: 12px;
+    padding: 18px 20px; overflow-x: auto;
+  }
+  .am-title { font-size: 14px; font-weight: 900; margin-bottom: 12px; }
+  .am-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .am-table th {
+    text-align: left; font-size: 9px; font-weight: 800; color: #b8a07a;
+    letter-spacing: 1px; text-transform: uppercase; padding: 6px 10px;
+    border-bottom: 2px solid #e0ddd5;
+  }
+  .am-table td { padding: 8px 10px; border-bottom: 1px solid #f0ede5; }
+  .am-table tr:last-child td { border-bottom: none; }
+  .am-level {
+    display: inline-block; padding: 2px 10px; border-radius: 10px;
+    font-size: 9px; font-weight: 800;
+  }
+  .al-auto { background: #d4f5e0; color: #1a7a3a; }
+  .al-ceo  { background: #fff3cd; color: #8a6d1b; }
+  .al-corp { background: #fde2e2; color: #c0392b; }
+
+  /* ===== CEO BRIEFING ===== */
+  .briefing-preview {
+    background: #1a1a2e; border-radius: 12px; padding: 20px 24px;
+    color: #ccc; font-size: 11px; line-height: 1.8; font-family: monospace;
+  }
+  .bp-title { color: #e8a838; font-weight: 800; font-size: 13px; margin-bottom: 8px; }
+  .bp-section { color: #fff; font-weight: 700; margin-top: 8px; }
+  .bp-ok { color: #48bb78; }
+  .bp-warn { color: #ed8936; }
+  .bp-critical { color: #e74c3c; }
+  .bp-dim { color: #666; }
+
+  /* ===== DEPT STATUS ===== */
+  .dept-status {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+  }
+  .ds-card {
+    background: #fffdf7; border: 1px solid #e0ddd5; border-radius: 12px;
+    padding: 16px 14px; border-top: 3px solid #ddd;
+    transition: box-shadow .2s, transform .15s;
+  }
+  .ds-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,.07); transform: translateY(-2px); }
+  .ds-cto { border-top-color: #9f7aea; }
+  .ds-coo { border-top-color: #48bb78; }
+  .ds-cmo { border-top-color: #ec407a; }
+  .ds-cfo { border-top-color: #4a90d9; }
+  .ds-card .ds-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .ds-card .ds-role { font-size: 12px; font-weight: 900; }
+  .ds-card .ds-tool { font-size: 8px; font-weight: 700; padding: 2px 8px; border-radius: 8px; }
+  .ds-card .ds-file { font-size: 8px; color: #999; font-family: monospace; margin-top: 2px; }
+  .ds-card .ds-metrics { margin-top: 8px; }
+  .ds-card .ds-metric { display: flex; justify-content: space-between; font-size: 10px; padding: 3px 0; border-bottom: 1px solid #f5f2ec; }
+  .ds-card .ds-metric:last-child { border-bottom: none; }
+  .ds-card .ds-metric .dm-label { color: #999; }
+  .ds-card .ds-metric .dm-value { font-weight: 700; }
+  .ds-card .ds-tasks { margin-top: 8px; font-size: 9px; color: #888; background: #faf7f2; border-radius: 6px; padding: 6px 8px; line-height: 1.6; }
+
+  /* ===== TIMELINE ===== */
+  .timeline {
+    background: #fffdf7; border: 1px solid #e0ddd5; border-radius: 12px;
+    padding: 18px 20px; position: relative; overflow: hidden;
+  }
+  .timeline::before {
+    content: ''; position: absolute; left: 72px; top: 48px; bottom: 18px;
+    width: 3px; background: linear-gradient(180deg, #e8a838 0%, #48bb78 30%, #4a90d9 50%, #9f7aea 70%, #ed8936 100%);
+    border-radius: 2px;
+  }
+  .tl-title { font-size: 14px; font-weight: 900; margin-bottom: 14px; }
+  .tl-item {
+    display: flex; align-items: flex-start; gap: 14px; margin-bottom: 10px;
+    position: relative; padding-left: 0;
+  }
+  .tl-time {
+    width: 50px; text-align: right; font-size: 13px; font-weight: 800;
+    font-variant-numeric: tabular-nums; flex-shrink: 0; padding-top: 2px;
+  }
+  .tl-dot {
+    width: 13px; height: 13px; border-radius: 50%; flex-shrink: 0;
+    margin-top: 3px; z-index: 1; border: 2px solid #fffdf7;
+  }
+  .tl-content { flex: 1; }
+  .tl-name { font-size: 12px; font-weight: 700; }
+  .tl-desc { font-size: 10px; color: #999; }
+  .tl-tags { display: flex; gap: 4px; margin-top: 3px; flex-wrap: wrap; }
+
+  /* ===== FEEDBACK LOOPS ===== */
+  .feedback-loops {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px 12px; margin-bottom: 14px;
+    padding-top: 6px;
+  }
+  .feedback-card {
+    background: #fffdf7; border: 1px solid #e0ddd5; border-radius: 10px;
+    padding: 14px 14px 10px; display: flex; align-items: center; gap: 0;
+    overflow: visible; position: relative; margin-top: 4px;
+  }
+  .feedback-card .fl-num {
+    position: absolute; top: -10px; left: 14px;
+    font-size: 8px; font-weight: 800; background: #e8a838; color: #fff;
+    padding: 2px 8px; border-radius: 8px; z-index: 1; white-space: nowrap;
+  }
+  .fl-label { font-size: 10px; font-weight: 700; color: #666; margin-bottom: 4px; }
+
+  /* ===== FLOW NODES ===== */
+  .fn {
+    flex-shrink: 0; padding: 5px 10px; border-radius: 7px;
+    font-size: 10px; font-weight: 700; text-align: center; white-space: nowrap; line-height: 1.3;
+  }
+  .fn span { font-size: 8px; font-weight: 500; display: block; opacity: .7; }
+  .fn-scan    { background: #dbeefe; color: #2a6cb6; border: 1px solid #a8ccee; }
+  .fn-draft   { background: #ede0fc; color: #6a3aaa; border: 1px solid #c9b2f0; }
+  .fn-corp    { background: #ffe8cc; color: #d35400; border: 1px solid #f0c89a; }
+  .fn-cowork  { background: #fff3cd; color: #8a6d1b; border: 1px solid #e8d48b; }
+  .fn-auto    { background: #d4f5e0; color: #1a7a3a; border: 1px solid #a3e4b8; }
+  .fn-cortex  { background: #ede0fc; color: #6a3aaa; border: 1px solid #c9b2f0; }
+  .fn-ext     { background: #f7f4f0; color: #888; border: 1px solid #e0ddd5; }
+  .fn-ok      { background: #d4f5e0; color: #1a7a3a; border: 1px solid #a3e4b8; }
+  .fn-money   { background: #fff3cd; color: #8a6d1b; border: 1px solid #e8d48b; }
+  .fn-sns     { background: #fce4ec; color: #c2185b; border: 1px solid #f0b0c4; }
+  .fn-ceo     { background: linear-gradient(135deg, #fff3cd, #ffe8cc); color: #8a6d1b; border: 2px solid #e8a838; }
+  .ar { flex-shrink: 0; padding: 0 5px; color: #ddd; font-size: 13px; }
+  .ar-hl { color: #e8a838; font-weight: 700; }
+
+  /* ===== FLOWS ===== */
+  .flows { display: flex; flex-direction: column; gap: 10px; }
+  .flow-card {
+    background: #fffdf7; border: 1px solid #e0ddd5; border-radius: 10px;
+    padding: 10px 14px; display: flex; align-items: center; gap: 0;
+    overflow-x: auto; position: relative;
+  }
+  .flow-card .fl-num {
+    position: absolute; top: -8px; left: 14px;
+    font-size: 8px; font-weight: 800; background: #e8a838; color: #fff;
+    padding: 1px 8px; border-radius: 8px;
+  }
+
+  /* ===== COMM PROTOCOL ===== */
+  .comm-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
+  }
+  .comm-card {
+    background: #fffdf7; border: 1px solid #e0ddd5; border-radius: 10px;
+    padding: 14px; position: relative;
+  }
+  .comm-card .cc-route { font-size: 11px; font-weight: 800; margin-bottom: 6px; }
+  .comm-card .cc-method { font-size: 10px; color: #666; }
+  .comm-card .cc-method strong { color: #2d2d2d; }
+  .comm-card .cc-arrow { color: #e8a838; font-weight: 700; }
+
+  /* ===== TASK GRID ===== */
+  .task-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  }
+  .task-card {
+    background: #fffdf7; border: 1px solid #e0ddd5; border-radius: 12px;
+    padding: 14px 14px; border-top: 3px solid #ddd;
+    transition: box-shadow .2s, transform .15s; position: relative;
+  }
+  .task-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,.07); transform: translateY(-2px); }
+  .tc-blue   { border-top-color: #4a90d9; }
+  .tc-purple { border-top-color: #9f7aea; }
+  .tc-orange { border-top-color: #ed8936; }
+  .tc-green  { border-top-color: #48bb78; }
+  .tc-gold   { border-top-color: #e8a838; }
+  .tc-pink   { border-top-color: #ec407a; }
+  .tc-teal   { border-top-color: #00897b; }
+  .task-card .tc-ic { font-size: 20px; margin-bottom: 4px; }
+  .task-card h3 { font-size: 13px; font-weight: 800; margin-bottom: 2px; }
+  .task-card .tc-sub { font-size: 10px; color: #999; margin-bottom: 6px; line-height: 1.4; }
+  .tc-status {
+    position: absolute; top: 10px; right: 10px;
+    font-size: 8px; font-weight: 800; padding: 2px 7px; border-radius: 8px;
+  }
+  .st-active  { background: #d4f5e0; color: #1a7a3a; }
+  .st-waiting { background: #ffe8cc; color: #d35400; }
+  .st-ready   { background: #dbeefe; color: #2a6cb6; }
+  .st-new     { background: #fff3cd; color: #8a6d1b; }
+  .tc-schedule { font-size: 9px; color: #b8a07a; font-weight: 600; }
+  .tc-dept { font-size: 8px; font-weight: 800; padding: 1px 6px; border-radius: 6px; display: inline-block; margin-top: 4px; }
+  .td-cto  { background: #ede0fc; color: #6a3aaa; }
+  .td-coo  { background: #d4f5e0; color: #1a7a3a; }
+  .td-cmo  { background: #fce4ec; color: #c2185b; }
+  .td-cfo  { background: #dbeefe; color: #2a6cb6; }
+  .td-ceo  { background: #fff3cd; color: #8a6d1b; }
+
+  /* ===== MULTIPLIER ===== */
+  .multiplier {
+    background: #fffdf7; border: 2px solid #e8a838; border-radius: 14px;
+    padding: 18px 20px; text-align: center;
+  }
+  .mult-title { font-size: 16px; font-weight: 900; margin-bottom: 4px; }
+  .mult-title .hl { color: #e8a838; }
+  .mult-desc { font-size: 11px; color: #888; margin-bottom: 14px; }
+  .mult-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .mult-item {
+    background: #faf7f2; border-radius: 8px; padding: 10px 6px;
+    border: 1px solid #ebe6dc;
+  }
+  .mult-item .mi-ic { font-size: 18px; }
+  .mult-item .mi-label { font-size: 10px; font-weight: 700; margin-top: 2px; }
+  .mult-item .mi-dest { font-size: 8px; color: #999; }
+
+  /* ===== SETUP ===== */
+  .setup-bar {
+    background: #fffdf7; border: 1px solid #e0ddd5; border-radius: 12px;
+    padding: 16px 20px;
+  }
+  .sb-title { font-size: 14px; font-weight: 900; margin-bottom: 10px; }
+  .sb-progress {
+    background: #f2f2f7; border-radius: 8px; height: 10px; margin-bottom: 12px; overflow: hidden;
+  }
+  .sb-fill { background: linear-gradient(90deg, #e8a838, #48bb78); height: 100%; border-radius: 8px; transition: width .5s; }
+  .sb-items { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .sb-item { text-align: center; padding: 8px 4px; }
+  .sb-item .si-ic { font-size: 22px; }
+  .sb-item .si-label { font-size: 10px; font-weight: 700; margin-top: 2px; }
+  .sb-item .si-time { font-size: 9px; color: #999; }
+  .sb-item .si-impact { font-size: 8px; color: #48bb78; margin-top: 2px; font-weight: 600; }
+  .sb-inactive { opacity: .4; }
+
+  /* ===== ROADMAP ===== */
+  .roadmap { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+  .rm-month {
+    background: #fffdf7; border: 1px solid #e0ddd5; border-radius: 10px;
+    padding: 12px 10px; text-align: center; border-top: 3px solid #e0ddd5;
+    transition: transform .15s;
+  }
+  .rm-month:hover { transform: translateY(-2px); }
+  .rm-current { border-top-color: #e8a838; background: #fdf8ee; }
+  .rm-future  { border-top-color: #e0ddd5; opacity: .65; }
+  .rm-num { font-size: 10px; font-weight: 800; color: #b8a07a; }
+  .rm-label { font-size: 11px; font-weight: 700; margin: 4px 0 2px; }
+  .rm-rev { font-size: 16px; font-weight: 900; }
+  .rm-rev-green { color: #1a7a3a; }
+  .rm-rev-gold  { color: #8a6d1b; }
+  .rm-rev-gray  { color: #bbb; }
+  .rm-streams { font-size: 8px; color: #999; line-height: 1.5; margin-top: 4px; }
+
+  /* ===== LEGEND ===== */
+  .legend {
+    display: flex; gap: 16px; flex-wrap: wrap; margin-top: 28px;
+    padding: 12px 16px; background: #fffdf7; border-radius: 8px; border: 1px solid #e0ddd5;
+  }
+  .legend-t { font-size: 10px; font-weight: 800; color: #aaa; margin-right: 2px; letter-spacing: 1px; }
+  .lg { display: flex; align-items: center; gap: 5px; font-size: 10px; color: #888; }
+  .lg-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+
+  /* ===== FOOTER ===== */
+  .footer {
+    margin-top: 14px; padding: 10px 14px;
+    background: #1a1a2e; border-radius: 8px;
+    font-size: 9px; line-height: 1.9; color: #999;
+  }
+  .footer .d-gold   { color: #e8a838; }
+  .footer .d-green  { color: #48bb78; }
+  .footer .d-blue   { color: #4a90d9; }
+  .footer .d-purple { color: #9f7aea; }
+  .footer .d-orange { color: #ed8936; }
+  .footer .d-pink   { color: #ec407a; }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 800px) {
+    .task-grid { grid-template-columns: 1fr 1fr; }
+    .dept-status { grid-template-columns: 1fr 1fr; }
+    .comm-grid { grid-template-columns: 1fr; }
+    .org-branch { flex-wrap: wrap; gap: 8px; }
+    .org-branch::before { display: none; }
+    .org-dept::before { display: none; }
+    .org-dept { padding-top: 0; }
+    .mult-grid { grid-template-columns: repeat(3, 1fr); }
+    .sb-items { grid-template-columns: repeat(3, 1fr); }
+    .philosophy { grid-template-columns: 1fr; }
+    .feedback-loops { grid-template-columns: 1fr; }
+    .roadmap { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 500px) {
+    .task-grid { grid-template-columns: 1fr; }
+    .dept-status { grid-template-columns: 1fr; }
+    .roadmap { grid-template-columns: repeat(2, 1fr); }
+    .mult-grid { grid-template-columns: repeat(2, 1fr); }
+    .sb-items { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="main-header">
+    <div class="main-title"><span class="hl">AI Company</span> Architecture</div>
+    <div class="nav-links">4部門 ─ 19タスク ─ 2026-03-27</div>
+  </div>
+  <div class="subtitle">自分 = 会長。AIが CEO + 4部門を自律運営。自分の日常作業: ゼロ。</div>
+
+  <!-- ====== PHILOSOPHY ====== -->
+  <div class="philosophy">
+    <div class="ph-item">
+      <div class="ph-icon">👑</div>
+      <div class="ph-title">Chairman = 自分</div>
+      <div class="ph-desc">戦略判断とクライアント対応だけ。他は全部AIが回す。</div>
+      <div class="ph-time">0<span style="font-size:12px;color:#999;">分/日</span></div>
+    </div>
+    <div class="ph-item">
+      <div class="ph-icon">🧠</div>
+      <div class="ph-title">CEO = Cowork</div>
+      <div class="ph-desc">指示解釈→部門振分→自動承認→統合報告。全部門を統括。</div>
+      <div class="ph-time">24h<span style="font-size:12px;color:#999;">自律</span></div>
+    </div>
+    <div class="ph-item">
+      <div class="ph-icon">🏢</div>
+      <div class="ph-title">4部門</div>
+      <div class="ph-desc">CTO・COO・CMO・CFO が並列自律稼働。19タスク。</div>
+      <div class="ph-time">19<span style="font-size:12px;color:#999;">タスク</span></div>
+    </div>
+  </div>
+
+  <!-- ====== ORG CHART ====== -->
+  <div class="sec">Organization Chart — AI組織図</div>
+
+  <div class="org-chart">
+    <div class="org-chairman">
+      <div class="oc-title">CHAIRMAN</div>
+      <div class="oc-name">自分（星野舜）</div>
+      <div class="oc-sub">戦略判断 / クライアント対応 / 日常作業ゼロ</div>
+    </div>
+    <div class="org-line"></div>
+    <div style="font-size:9px; color:#999; margin: 4px 0;">一言指示 ↓</div>
+    <div class="org-ceo">
+      <div class="oc-title">CEO — 最高経営責任者</div>
+      <div class="oc-name">Cowork + ceo-briefing</div>
+      <div class="oc-sub">指示ルーティング / 自動承認 / 統合レポート / 部門横断調整</div>
+    </div>
+    <div class="org-line"></div>
+
+    <div class="org-branch">
+      <div class="org-dept">
+        <div class="org-dept-card od-cto">
+          <div class="od-icon">🔧</div>
+          <div class="od-role">CTO</div>
+          <div class="od-name">最高技術責任者</div>
+          <div class="od-tool" style="background:#ede0fc;color:#6a3aaa;">Cortex + Cursor</div>
+          <div class="od-scope">コード / git / デプロイ<br>Supabase / 自己修復</div>
+        </div>
+      </div>
+      <div class="org-dept">
+        <div class="org-dept-card od-coo">
+          <div class="od-icon">⚙️</div>
+          <div class="od-role">COO</div>
+          <div class="od-name">最高執行責任者</div>
+          <div class="od-tool" style="background:#d4f5e0;color:#1a7a3a;">Schedule Tasks</div>
+          <div class="od-scope">19タスク監視 / パイプライン<br>タスク間連携 / 健全性管理</div>
+        </div>
+      </div>
+      <div class="org-dept">
+        <div class="org-dept-card od-cmo">
+          <div class="od-icon">📈</div>
+          <div class="od-role">CMO</div>
+          <div class="od-name">最高マーケティング責任者</div>
+          <div class="od-tool" style="background:#fce4ec;color:#c2185b;">SNS Autopilot</div>
+          <div class="od-scope">X投稿 / エンゲージメント<br>記事生成 / ブランディング</div>
+        </div>
+      </div>
+      <div class="org-dept">
+        <div class="org-dept-card od-cfo">
+          <div class="od-icon">💰</div>
+          <div class="od-role">CFO</div>
+          <div class="od-name">最高財務責任者</div>
+          <div class="od-tool" style="background:#dbeefe;color:#2a6cb6;">経理 GAS Pipeline</div>
+          <div class="od-scope">契約 / 売掛 / 入金<br>freee連携 / ダッシュボード</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== REVENUE LOOP (from Revenue_Engine) ====== -->
+  <div class="sec">Revenue Loop — 自己強化型の収益サイクル</div>
+
+  <div class="loop-wrap">
+    <div class="loop-ring">
+      <div class="loop-node">
+        <div class="ln-ic">🔍</div>
+        <div class="ln-label">案件発見</div>
+        <div class="ln-sub">CW/ランサーズ</div>
+        <div class="ln-auto la-auto">自動</div>
+      </div>
+      <div class="loop-arrow">→</div>
+      <div class="loop-node">
+        <div class="ln-ic">📝</div>
+        <div class="ln-label">応募準備</div>
+        <div class="ln-sub">ドラフト生成</div>
+        <div class="ln-auto la-auto">自動</div>
+      </div>
+      <div class="loop-arrow">→</div>
+      <div class="loop-node" style="background:#fff3cd;border-radius:10px;padding:10px 8px;">
+        <div class="ln-ic">🧠</div>
+        <div class="ln-label">CEO自動承認 (80+)</div>
+        <div class="ln-sub">または手動確認</div>
+        <div class="ln-auto la-corp">自動 or CEO</div>
+      </div>
+      <div class="loop-arrow">→</div>
+      <div class="loop-node">
+        <div class="ln-ic">💼</div>
+        <div class="ln-label">受注・納品</div>
+        <div class="ln-sub">Cowork支援</div>
+        <div class="ln-auto la-corp">CEO+AI</div>
+      </div>
+      <div class="loop-arrow">→</div>
+      <div class="loop-node">
+        <div class="ln-ic">🎯</div>
+        <div class="ln-label">実績化</div>
+        <div class="ln-sub">1→5コンテンツ</div>
+        <div class="ln-auto la-auto">自動</div>
+      </div>
+      <div class="loop-arrow">→</div>
+      <div class="loop-node">
+        <div class="ln-ic">📱</div>
+        <div class="ln-label">SNS発信</div>
+        <div class="ln-sub">Autopilot</div>
+        <div class="ln-auto la-auto">自動</div>
+      </div>
+      <div class="loop-arrow">→</div>
+      <div class="loop-node">
+        <div class="ln-ic">📈</div>
+        <div class="ln-label">信頼UP</div>
+        <div class="ln-sub">→ 単価UP</div>
+        <div class="ln-auto la-auto">自動</div>
+      </div>
+    </div>
+  </div>
+  <div class="loop-arrow-back">← ─ ─ ─ ─ ─ ─ ─ ─  ループ  ─ ─ ─ ─ ─ ─ ─ ─ →</div>
+
+  <!-- ====== APPROVAL MATRIX ====== -->
+  <div class="sec">Approval Matrix — CEO自動承認ルール</div>
+
+  <div class="approval-matrix">
+    <div class="am-title">🔒 誰が承認するか？</div>
+    <table class="am-table">
+      <tr>
+        <th>アクション</th>
+        <th>承認レベル</th>
+        <th>条件</th>
+      </tr>
+      <tr>
+        <td>SNS投稿（朝/午後）</td>
+        <td><span class="am-level al-auto">自動実行</span></td>
+        <td>品質ゲート9項目通過済み → そのまま投稿</td>
+      </tr>
+      <tr>
+        <td>git push / clasp push</td>
+        <td><span class="am-level al-auto">自動実行</span></td>
+        <td>テストパス → 本番デプロイ</td>
+      </tr>
+      <tr>
+        <td>応募送信（80点以上）</td>
+        <td><span class="am-level al-auto">CEO自動</span></td>
+        <td>品質スコア80+ → CEO自動承認・送信</td>
+      </tr>
+      <tr>
+        <td>応募送信（80点未満）</td>
+        <td><span class="am-level al-ceo">CEO判断</span></td>
+        <td>75-79点 → CEO手動確認後送信</td>
+      </tr>
+      <tr>
+        <td>新規ツール購入 (¥10k+)</td>
+        <td><span class="am-level al-corp">自分承認</span></td>
+        <td>理由記入 → 戦略会議待ち</td>
+      </tr>
+      <tr>
+        <td>料金値上げ</td>
+        <td><span class="am-level al-corp">自分判断</span></td>
+        <td>市場調査完了 → 自分最終判断</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ====== DEPT STATUS BOARD ====== -->
+  <div class="sec">Department Status Board — 部門ステータス（毎朝7:45更新）</div>
+
+  <div class="dept-status">
+    <div class="ds-card ds-cto">
+      <div class="ds-header">
+        <div class="ds-role">🔧 CTO</div>
+        <div class="ds-tool" style="background:#ede0fc;color:#6a3aaa;">Cortex</div>
+      </div>
+      <div class="ds-file">cto-status.md</div>
+      <div class="ds-metrics">
+        <div class="ds-metric"><span class="dm-label">更新者</span><span class="dm-value">cortex-autonomous</span></div>
+        <div class="ds-metric"><span class="dm-label">更新時刻</span><span class="dm-value">毎日 09:00</span></div>
+        <div class="ds-metric"><span class="dm-label">報告先</span><span class="dm-value">CEO Briefing</span></div>
+      </div>
+      <div class="ds-tasks"><strong>追跡:</strong> git push数 / デプロイ完了 / ブロッカー</div>
+    </div>
+
+    <div class="ds-card ds-coo">
+      <div class="ds-header">
+        <div class="ds-role">⚙️ COO</div>
+        <div class="ds-tool" style="background:#d4f5e0;color:#1a7a3a;">Tasks</div>
+      </div>
+      <div class="ds-file">coo-status.md</div>
+      <div class="ds-metrics">
+        <div class="ds-metric"><span class="dm-label">更新者</span><span class="dm-value">knowledge-gardener</span></div>
+        <div class="ds-metric"><span class="dm-label">更新時刻</span><span class="dm-value">毎日 20:00</span></div>
+        <div class="ds-metric"><span class="dm-label">報告先</span><span class="dm-value">CEO Briefing</span></div>
+      </div>
+      <div class="ds-tasks"><strong>追跡:</strong> タスク稼働数 / 本日完了 / 失敗</div>
+    </div>
+
+    <div class="ds-card ds-cmo">
+      <div class="ds-header">
+        <div class="ds-role">📈 CMO</div>
+        <div class="ds-tool" style="background:#fce4ec;color:#c2185b;">SNS</div>
+      </div>
+      <div class="ds-file">cmo-status.md</div>
+      <div class="ds-metrics">
+        <div class="ds-metric"><span class="dm-label">更新者</span><span class="dm-value">sns-nightly-collect</span></div>
+        <div class="ds-metric"><span class="dm-label">更新時刻</span><span class="dm-value">毎日 21:00</span></div>
+        <div class="ds-metric"><span class="dm-label">報告先</span><span class="dm-value">CEO Briefing</span></div>
+      </div>
+      <div class="ds-tasks"><strong>追跡:</strong> 投稿数 / エンゲージメント / フォロワー増減</div>
+    </div>
+
+    <div class="ds-card ds-cfo">
+      <div class="ds-header">
+        <div class="ds-role">💰 CFO</div>
+        <div class="ds-tool" style="background:#dbeefe;color:#2a6cb6;">GAS</div>
+      </div>
+      <div class="ds-file">cfo-status.md</div>
+      <div class="ds-metrics">
+        <div class="ds-metric"><span class="dm-label">更新者</span><span class="dm-value">CEO / GAS実行後</span></div>
+        <div class="ds-metric"><span class="dm-label">更新時刻</span><span class="dm-value">GAS実行時</span></div>
+        <div class="ds-metric"><span class="dm-label">報告先</span><span class="dm-value">CEO Briefing</span></div>
+      </div>
+      <div class="ds-tasks"><strong>追跡:</strong> 契約数 / 未回収残高 / マッチング要確認</div>
+    </div>
+  </div>
+
+  <!-- ====== CEO BRIEFING PREVIEW ====== -->
+  <div class="sec">CEO Briefing — 毎朝7:45 自動生成（プレビュー）</div>
+
+  <div class="briefing-preview">
+    <div class="bp-title">CEO Daily Briefing — 2026-03-27</div>
+    <div class="bp-section">🔧 CTO（技術）:</div>
+    <span class="bp-dim">  </span><span class="bp-ok">✓</span> 昨日のpush: 2件（経理ダッシュボード, ポートフォリオ）<br>
+    <span class="bp-dim">  </span><span class="bp-ok">✓</span> 放置ブロッカー: 0件<br>
+    <span class="bp-dim">  </span><span class="bp-warn">⚠</span> freeeサイン再認証待ち（要自分: 5分）<br>
+    <div class="bp-section">📈 CMO（マーケ）:</div>
+    <span class="bp-dim">  </span><span class="bp-ok">✓</span> X投稿: 朝/午後 2本（品質: 85点/82点）<br>
+    <span class="bp-dim">  </span><span class="bp-ok">✓</span> フォロワー: +12（週間）/ エンゲージメント: 3.2%<br>
+    <span class="bp-dim">  </span>  バズ投稿: 1本検出 → 派生3本生成済み<br>
+    <div class="bp-section">⚙️ COO（業務）:</div>
+    <span class="bp-dim">  </span><span class="bp-ok">✓</span> スケジュールタスク: 19/19 稼働中<br>
+    <span class="bp-dim">  </span><span class="bp-ok">✓</span> 昨日の実行: 14タスク完了 / 失敗: 0<br>
+    <span class="bp-dim">  </span>  承認待ち: 応募ドラフト 0件<br>
+    <div class="bp-section">💰 CFO（財務）:</div>
+    <span class="bp-dim">  </span><span class="bp-ok">✓</span> 契約者: 520件 / 未回収: ¥418,903,599<br>
+    <span class="bp-dim">  </span><span class="bp-warn">⚠</span> マッチング要確認: 475件<br>
+    <br>
+    <span style="color:#e8a838;font-weight:800;">🎯 自分 TODO（本日）:</span><br>
+    <span class="bp-dim">  </span><span class="bp-warn">1.</span> freeeサイン再認証（5分）<br>
+    <span class="bp-dim">  </span><span class="bp-dim">他: なし — 全自動進行中</span><br>
+  </div>
+
+  <!-- ====== DAILY TIMELINE ====== -->
+  <div class="sec">Daily Timeline — 1日の自動フロー（19タスク）</div>
+
+  <div class="timeline">
+    <div class="tl-title">⏰ ある1日の動き</div>
+
+    <div class="tl-item">
+      <div class="tl-time" style="color:#9f7aea;">07:30</div>
+      <div class="tl-dot" style="background:#9f7aea;"></div>
+      <div class="tl-content">
+        <div class="tl-name">X 自動投稿</div>
+        <div class="tl-desc">SNS Autopilot v3 — ローテーション→フック選択→類似度チェック→品質ゲート→投稿</div>
+        <div class="tl-tags"><span class="b b-pink">CMO</span><span class="b b-green">完全自動</span></div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-time" style="color:#e8a838;">07:45</div>
+      <div class="tl-dot" style="background:#e8a838;"></div>
+      <div class="tl-content">
+        <div class="tl-name" style="color:#e8a838;">CEO Daily Briefing <span class="b b-gold" style="font-size:8px;">毎朝</span></div>
+        <div class="tl-desc">4部門ステータス統合 → 自分ブリーフィング生成 → デフォルト自動進行（承認不要）</div>
+        <div class="tl-tags"><span class="b b-gold">CEO</span><span class="b b-green">自動</span></div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-time" style="color:#48bb78;">08:30</div>
+      <div class="tl-dot" style="background:#48bb78;"></div>
+      <div class="tl-content">
+        <div class="tl-name">週次オプティマイザー <span style="font-size:9px;color:#999;">月曜のみ</span></div>
+        <div class="tl-desc">KPI自動記録 → ジャーナル生成 → 勝ちパターン分析 → スプリント更新</div>
+        <div class="tl-tags"><span class="b b-green">COO</span><span class="b b-gray">月曜</span></div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-time" style="color:#9f7aea;">09:00</div>
+      <div class="tl-dot" style="background:#9f7aea;"></div>
+      <div class="tl-content">
+        <div class="tl-name">Cortex 自律モード → CTO Status Report 更新</div>
+        <div class="tl-desc">プロジェクト横断分析 → タスク自動生成・実行 → cto-status.md 自動更新</div>
+        <div class="tl-tags"><span class="b b-purple">CTO</span><span class="b b-green">自動</span></div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-time" style="color:#48bb78;">10:00</div>
+      <div class="tl-dot" style="background:#48bb78;"></div>
+      <div class="tl-content">
+        <div class="tl-name">Todo Morning Picker</div>
+        <div class="tl-desc">Todoダッシュボードのタスク選択 → daily_tasks追加 → Cowork担当タスク自動実行</div>
+        <div class="tl-tags"><span class="b b-green">COO</span><span class="b b-green">自動</span></div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-time" style="color:#4a90d9;">12:00</div>
+      <div class="tl-dot" style="background:#4a90d9;"></div>
+      <div class="tl-content">
+        <div class="tl-name">案件スキャナー + 応募ドラフター</div>
+        <div class="tl-desc">CW/ランサーズ巡回 → スコアリング → ドラフト作成 → <strong>80点+はCEO自動送信</strong></div>
+        <div class="tl-tags"><span class="b b-blue">COO</span><span class="b b-gold">CEO判断</span></div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-time" style="color:#ec407a;">13:00</div>
+      <div class="tl-dot" style="background:#ec407a;"></div>
+      <div class="tl-content">
+        <div class="tl-name">SNS エンゲージメント</div>
+        <div class="tl-desc">同業界アカウントへのいいね・リプライ候補生成 → フォロワー増加加速</div>
+        <div class="tl-tags"><span class="b b-pink">CMO</span><span class="b b-green">自動</span></div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-time" style="color:#48bb78;">14:00</div>
+      <div class="tl-dot" style="background:#48bb78;"></div>
+      <div class="tl-content">
+        <div class="tl-name">技術トレンドスカウト</div>
+        <div class="tl-desc">Qiita/Zenn/はてブ → 投稿ネタ・学習機会・案件チャンス → trend_queue.md</div>
+        <div class="tl-tags"><span class="b b-pink">CMO</span><span class="b b-purple">CTO</span><span class="b b-green">自動</span></div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-time" style="color:#9f7aea;">15:00</div>
+      <div class="tl-dot" style="background:#9f7aea;"></div>
+      <div class="tl-content">
+        <div class="tl-name">X 午後投稿</div>
+        <div class="tl-desc">朝と別テンプレート・別アングルで2投稿目 → 露出倍増</div>
+        <div class="tl-tags"><span class="b b-pink">CMO</span><span class="b b-green">自動</span></div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-time" style="color:#4a90d9;">16:00</div>
+      <div class="tl-dot" style="background:#4a90d9;"></div>
+      <div class="tl-content">
+        <div class="tl-name">案件スキャン（夕方）</div>
+        <div class="tl-desc">午後新着案件キャッチ → 即時通知 → 応募スピードで差別化</div>
+        <div class="tl-tags"><span class="b b-blue">COO</span><span class="b b-gold">CEO判断</span></div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-time" style="color:#4a90d9;">18:00</div>
+      <div class="tl-dot" style="background:#4a90d9;"></div>
+      <div class="tl-content">
+        <div class="tl-name">応募トラッカー</div>
+        <div class="tl-desc">応募状況自動追跡 → Win/Loss → フォローアップ自動送信 → 勝率最適化</div>
+        <div class="tl-tags"><span class="b b-blue">COO</span><span class="b b-green">自動</span></div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-time" style="color:#ed8936;">20:00</div>
+      <div class="tl-dot" style="background:#ed8936;"></div>
+      <div class="tl-content">
+        <div class="tl-name">ナレッジガーデナー → COO Status Report 更新</div>
+        <div class="tl-desc">整合性チェック + 全タスク健全性監視 + coo-status.md 自動更新</div>
+        <div class="tl-tags"><span class="b b-green">COO</span><span class="b b-green">自動</span></div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-time" style="color:#ec407a;">21:00</div>
+      <div class="tl-dot" style="background:#ec407a;"></div>
+      <div class="tl-content">
+        <div class="tl-name">SNS データ収集 → CMO Status Report 更新</div>
+        <div class="tl-desc">パフォーマンス収集 → バズピボット → 学習ループ → cmo-status.md 自動更新</div>
+        <div class="tl-tags"><span class="b b-pink">CMO</span><span class="b b-green">自動</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== COMMUNICATION PROTOCOL ====== -->
+  <div class="sec">Communication Protocol — 部門間通信</div>
+
+  <div class="comm-grid">
+    <div class="comm-card">
+      <div class="cc-route">CEO <span class="cc-arrow">↔</span> CTO（Cortex）</div>
+      <div class="cc-method"><strong>指示:</strong> Discord <code>@Cortex [Cowork] 指示</code><br><strong>報告:</strong> cto-status.md + Discord完了通知</div>
+    </div>
+    <div class="comm-card">
+      <div class="cc-route">CEO <span class="cc-arrow">↔</span> COO（Schedule Tasks）</div>
+      <div class="cc-method"><strong>指示:</strong> SKILL.md更新 or 直接実行<br><strong>報告:</strong> coo-status.md（knowledge-gardener更新）</div>
+    </div>
+    <div class="comm-card">
+      <div class="cc-route">CEO <span class="cc-arrow">↔</span> CMO（SNS Autopilot）</div>
+      <div class="cc-method"><strong>指示:</strong> Cortex経由 SNS Mode<br><strong>報告:</strong> cmo-status.md + Supabase SNSテーブル</div>
+    </div>
+    <div class="comm-card">
+      <div class="cc-route">CEO <span class="cc-arrow">↔</span> CFO（経理 GAS）</div>
+      <div class="cc-method"><strong>指示:</strong> GASメニュー or Coworkから操作<br><strong>報告:</strong> cfo-status.md + 経理ダッシュボード</div>
+    </div>
+  </div>
+
+  <!-- ====== FEEDBACK LOOPS ====== -->
+  <div class="sec">Feedback Loops — 6段自己改善サイクル</div>
+
+  <div class="feedback-loops">
+    <div class="feedback-card">
+      <div class="fl-num">LOOP 1 案件獲得</div>
+      <div class="fn fn-scan">job-scanner<br><span>COO 昼+夕</span></div>
+      <div class="ar ar-hl">→</div>
+      <div class="fn fn-ceo">CEO<span>自動承認</span></div>
+      <div class="ar">→</div>
+      <div class="fn fn-ext">proposal-tracker</div>
+      <div class="ar">→</div>
+      <div class="fn fn-ext">Win/Loss</div>
+      <div class="ar ar-hl">→</div>
+      <div class="fn fn-draft">テンプレ改善</div>
+    </div>
+
+    <div class="feedback-card">
+      <div class="fl-num">LOOP 2 SNSコンテンツ</div>
+      <div class="fn fn-auto">trend-scout<br><span>CMO/CTO</span></div>
+      <div class="ar ar-hl">→</div>
+      <div class="fn fn-ext">trend_queue</div>
+      <div class="ar">→</div>
+      <div class="fn fn-sns">午後投稿<span>CMO</span></div>
+      <div class="ar">→</div>
+      <div class="fn fn-sns">nightly<span>CMO</span></div>
+      <div class="ar ar-hl">→</div>
+      <div class="fn fn-draft">精度UP</div>
+    </div>
+
+    <div class="feedback-card">
+      <div class="fl-num">LOOP 3 SNSネットワーク</div>
+      <div class="fn fn-sns" style="background:#ede0fc;color:#6a3aaa;border:1px solid #c4a8ee;">engage<br><span>CMO</span></div>
+      <div class="ar ar-hl">→</div>
+      <div class="fn fn-ext">engage_log</div>
+      <div class="ar">→</div>
+      <div class="fn fn-sns">nightly<span>CMO</span></div>
+      <div class="ar">→</div>
+      <div class="fn fn-ext">効果分析</div>
+      <div class="ar ar-hl">→</div>
+      <div class="fn fn-draft">ターゲットUP</div>
+    </div>
+
+    <div class="feedback-card">
+      <div class="fl-num">LOOP 4 市場インテリジェンス</div>
+      <div class="fn fn-ext">market<br><span>COO</span></div>
+      <div class="ar ar-hl">→</div>
+      <div class="fn fn-ext">市場レポート</div>
+      <div class="ar">→</div>
+      <div class="fn fn-auto">skill-demand<span>COO</span></div>
+      <div class="ar">→</div>
+      <div class="fn fn-orange" style="background:#ffe8cc;color:#d35400;border:1px solid #f0c89a;">coconala<span>CMO</span></div>
+      <div class="ar ar-hl">→</div>
+      <div class="fn fn-draft">価格UP</div>
+    </div>
+
+    <div class="feedback-card">
+      <div class="fl-num">LOOP 5 コンテンツ量産</div>
+      <div class="fn fn-ok">post-delivery<br><span>COO</span></div>
+      <div class="ar ar-hl">→</div>
+      <div class="fn fn-ext">ケーススタディ</div>
+      <div class="ar">→</div>
+      <div class="fn fn-sns">inbound<span>CMO</span></div>
+      <div class="ar">→</div>
+      <div class="fn fn-ext">検索流入</div>
+      <div class="ar ar-hl">→</div>
+      <div class="fn fn-money">受注</div>
+    </div>
+
+    <div class="feedback-card">
+      <div class="fl-num">LOOP 6 ナレッジ品質</div>
+      <div class="fn fn-orange" style="background:#ffe8cc;color:#d35400;border:1px solid #f0c89a;">gardener<span>COO</span></div>
+      <div class="ar ar-hl">→</div>
+      <div class="fn fn-ext">整合性チェック</div>
+      <div class="ar">→</div>
+      <div class="fn fn-ext">自動修正</div>
+      <div class="ar">→</div>
+      <div class="fn fn-ceo">CEO Briefing</div>
+      <div class="ar ar-hl">→</div>
+      <div class="fn fn-draft">品質UP</div>
+    </div>
+  </div>
+
+  <!-- ====== FLOW SCENARIOS ====== -->
+  <div class="sec">Flow Scenarios — 実際の動き（会社版）</div>
+
+  <div class="flows">
+
+    <div>
+      <div class="fl-label">🔍 案件発見 → 受注（自分介入ゼロ版）</div>
+      <div class="flow-card">
+        <div class="fl-num">FLOW 1</div>
+        <div class="fn fn-scan">🔍<span>COO: scanner</span></div>
+        <div class="ar ar-hl">→</div>
+        <div class="fn fn-draft">📝<span>ドラフト生成</span></div>
+        <div class="ar">→</div>
+        <div class="fn fn-ceo">🧠<span>CEO: 80+自動承認</span></div>
+        <div class="ar ar-hl">→</div>
+        <div class="fn fn-auto">✅<span>自動送信</span></div>
+        <div class="ar">→</div>
+        <div class="fn fn-money">💰<span>受注</span></div>
+        <div class="ar">→</div>
+        <div class="fn fn-cowork">🧠<span>CEO支援</span></div>
+        <div class="ar ar-hl">→</div>
+        <div class="fn fn-ok">✅<span>納品</span></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="fl-label">👑 自分 → CEO → 部門振り分け（指示ルーティング）</div>
+      <div class="flow-card">
+        <div class="fl-num">FLOW 2</div>
+        <div class="fn fn-corp">👑<span>自分: 一言指示</span></div>
+        <div class="ar ar-hl">→</div>
+        <div class="fn fn-ceo">🧠<span>CEO: 解釈</span></div>
+        <div class="ar">→</div>
+        <div class="fn fn-ext">🔀<span>判断・分解</span></div>
+        <div class="ar ar-hl">→</div>
+        <div class="fn fn-cortex">🔧<span>CTO: コード</span></div>
+        <div class="ar">+</div>
+        <div class="fn fn-sns">📈<span>CMO: マーケ</span></div>
+        <div class="ar">+</div>
+        <div class="fn fn-auto">⚙️<span>COO: 運用</span></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="fl-label">📱 SNS 完全自動ループ（自分介入ゼロ）</div>
+      <div class="flow-card">
+        <div class="fl-num">FLOW 3</div>
+        <div class="fn fn-sns">📱<span>CMO: 朝投稿</span></div>
+        <div class="ar">→</div>
+        <div class="fn fn-sns">💬<span>CMO: 交流</span></div>
+        <div class="ar">→</div>
+        <div class="fn fn-auto">🔍<span>CMO: トレンド</span></div>
+        <div class="ar">→</div>
+        <div class="fn fn-sns">📱<span>CMO: 午後投稿</span></div>
+        <div class="ar">→</div>
+        <div class="fn fn-auto">📊<span>CMO: 収集</span></div>
+        <div class="ar ar-hl">→</div>
+        <div class="fn fn-auto">📈<span>学習ループ</span></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="fl-label">🎯 納品 → 5コンテンツ量産 → 信頼UP（自動）</div>
+      <div class="flow-card">
+        <div class="fl-num">FLOW 4</div>
+        <div class="fn fn-ok">✅<span>納品完了</span></div>
+        <div class="ar ar-hl">→</div>
+        <div class="fn fn-auto">🎯<span>COO: delivery</span></div>
+        <div class="ar">→</div>
+        <div class="fn fn-ext">📁<span>ケーススタディ</span></div>
+        <div class="ar">→</div>
+        <div class="fn fn-sns">🐦<span>CMO: X投稿</span></div>
+        <div class="ar">→</div>
+        <div class="fn fn-cortex">🔧<span>CTO: push</span></div>
+        <div class="ar ar-hl">→</div>
+        <div class="fn fn-ext">💼<span>ポートフォリオ</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ====== CONTENT MULTIPLIER ====== -->
+  <div class="sec">Content Multiplier — 1案件 → 5コンテンツ（COO + CMO連携）</div>
+
+  <div class="multiplier">
+    <div class="mult-title">🎯 <span class="hl">post-delivery</span> が自動生成</div>
+    <div class="mult-desc">COOが起動 → CMOがコンテンツ化 → CTOがデプロイ。全自動。</div>
+    <div class="mult-grid">
+      <div class="mult-item">
+        <div class="mi-ic">📁</div>
+        <div class="mi-label">ケーススタディ</div>
+        <div class="mi-dest">COO → 実績/</div>
+      </div>
+      <div class="mult-item">
+        <div class="mi-ic">🐦</div>
+        <div class="mi-label">Xスレッド</div>
+        <div class="mi-dest">CMO → X投稿</div>
+      </div>
+      <div class="mult-item">
+        <div class="mi-ic">🛒</div>
+        <div class="mi-label">ココナラ実績</div>
+        <div class="mi-dest">CMO → 出品追記</div>
+      </div>
+      <div class="mult-item">
+        <div class="mi-ic">📝</div>
+        <div class="mi-label">note記事ネタ</div>
+        <div class="mi-dest">CMO → ドラフト</div>
+      </div>
+      <div class="mult-item">
+        <div class="mi-ic">💼</div>
+        <div class="mi-label">ポートフォリオ</div>
+        <div class="mi-dest">CTO → push</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== SETUP ====== -->
+  <div class="sec">Setup — あと30分で全自動化</div>
+
+  <div class="setup-bar">
+    <div class="sb-title">🔧 セットアップ進捗 <span style="font-size:12px;color:#999;">0 / 5 完了</span></div>
+    <div class="sb-progress"><div class="sb-fill" style="width:0%;"></div></div>
+    <div class="sb-items">
+      <div class="sb-item">
+        <div class="si-ic">🐦</div>
+        <div class="si-label">X 開設</div>
+        <div class="si-time">5分</div>
+        <div class="si-impact">→ CMO起動</div>
+      </div>
+      <div class="sb-item">
+        <div class="si-ic">🔑</div>
+        <div class="si-label">X API キー</div>
+        <div class="si-time">10分</div>
+        <div class="si-impact">→ 自動投稿+学習</div>
+      </div>
+      <div class="sb-item">
+        <div class="si-ic">💼</div>
+        <div class="si-label">CW 登録</div>
+        <div class="si-time">10分</div>
+        <div class="si-impact">→ COOスキャナー起動</div>
+      </div>
+      <div class="sb-item">
+        <div class="si-ic">💼</div>
+        <div class="si-label">ランサーズ</div>
+        <div class="si-time">10分</div>
+        <div class="si-impact">→ 巡回対象追加</div>
+      </div>
+      <div class="sb-item">
+        <div class="si-ic">✉️</div>
+        <div class="si-label">掲載許可</div>
+        <div class="si-time">3分</div>
+        <div class="si-impact">→ 応募文の信頼UP</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== AUTOMATION TASKS (19 tasks with dept badges) ====== -->
+  <div class="sec">Automation Tasks — 19タスク並列稼働</div>
+
+  <div class="task-grid">
+    <!-- CEO -->
+    <div class="task-card tc-gold">
+      <div class="tc-ic">🧠</div>
+      <h3>CEO Briefing</h3>
+      <div class="tc-sub">4部門ステータス統合 → 自分ブリーフィング自動生成</div>
+      <span class="tc-dept td-ceo">CEO</span>
+      <div class="tc-schedule">毎朝 07:45</div>
+      <span class="tc-status st-new">NEW</span>
+    </div>
+
+    <!-- CTO (1 task) -->
+    <div class="task-card tc-purple">
+      <div class="tc-ic">🔧</div>
+      <h3>Cortex Autonomous</h3>
+      <div class="tc-sub">プロジェクト横断分析 → タスク自動生成・実行 → cto-status.md 更新</div>
+      <span class="tc-dept td-cto">CTO</span>
+      <div class="tc-schedule">毎日 09:00</div>
+      <span class="tc-status st-active">稼働中</span>
+    </div>
+
+    <!-- COO (10 tasks) -->
+    <div class="task-card tc-green">
+      <div class="tc-ic">🔍</div>
+      <h3>Job Scanner</h3>
+      <div class="tc-sub">CW/ランサーズ巡回 → スコアリング 3ティア → 即時通知</div>
+      <span class="tc-dept td-coo">COO</span>
+      <div class="tc-schedule">12:00 / 16:00</div>
+      <span class="tc-status st-active">稼働中</span>
+    </div>
+
+    <div class="task-card tc-green">
+      <div class="tc-ic">📝</div>
+      <h3>Proposal Drafter</h3>
+      <div class="tc-sub">スコアリング → 応募文テンプレート選択 → ドラフト生成</div>
+      <span class="tc-dept td-coo">COO</span>
+      <div class="tc-schedule">12:00 / 16:00 直後</div>
+      <span class="tc-status st-active">稼働中</span>
+    </div>
+
+    <div class="task-card tc-green">
+      <div class="tc-ic">📊</div>
+      <h3>Proposal Tracker</h3>
+      <div class="tc-sub">応募状況自動追跡 → Win/Loss → フォローアップ自動送信</div>
+      <span class="tc-dept td-coo">COO</span>
+      <div class="tc-schedule">毎日 18:00</div>
+      <span class="tc-status st-active">稼働中</span>
+    </div>
+
+    <div class="task-card tc-green">
+      <div class="tc-ic">📈</div>
+      <h3>Weekly Optimizer</h3>
+      <div class="tc-sub">KPI記録 → ジャーナル生成 → 勝ちパターン分析 → スプリント更新</div>
+      <span class="tc-dept td-coo">COO</span>
+      <div class="tc-schedule">毎週月曜 08:30</div>
+      <span class="tc-status st-waiting">月曜待ち</span>
+    </div>
+
+    <div class="task-card tc-green">
+      <div class="tc-ic">🛍️</div>
+      <h3>Market Monitor</h3>
+      <div class="tc-sub">CW/ココナラ相場追跡 → トレンド検出 → 価格提案</div>
+      <span class="tc-dept td-coo">COO</span>
+      <div class="tc-schedule">毎週月曜 08:30</div>
+      <span class="tc-status st-waiting">月曜待ち</span>
+    </div>
+
+    <div class="task-card tc-green">
+      <div class="tc-ic">🎯</div>
+      <h3>Coconala Optimizer</h3>
+      <div class="tc-sub">出品データ分析 → タイトル・説明文最適化 → 売上予測</div>
+      <span class="tc-dept td-coo">COO</span>
+      <div class="tc-schedule">毎週月曜 08:30</div>
+      <span class="tc-status st-waiting">月曜待ち</span>
+    </div>
+
+    <div class="task-card tc-green">
+      <div class="tc-ic">📚</div>
+      <h3>Skill Demand Analyzer</h3>
+      <div class="tc-sub">市場トレンド分析 → 学習優先度提案 → 新サービス企画</div>
+      <span class="tc-dept td-coo">COO</span>
+      <div class="tc-schedule">毎月1日</div>
+      <span class="tc-status st-ready">準備完了</span>
+    </div>
+
+    <div class="task-card tc-green">
+      <div class="tc-ic">🌳</div>
+      <h3>Knowledge Gardener</h3>
+      <div class="tc-sub">管理ファイル整合性チェック → 古い情報検出 → 自動修正 → coo-status.md 更新</div>
+      <span class="tc-dept td-coo">COO</span>
+      <div class="tc-schedule">毎日 20:00</div>
+      <span class="tc-status st-active">稼働中</span>
+    </div>
+
+    <div class="task-card tc-green">
+      <div class="tc-ic">📦</div>
+      <h3>Post-Delivery</h3>
+      <div class="tc-sub">納品完了 → ケーススタディ自動生成 → 5コンテンツ分岐</div>
+      <span class="tc-dept td-coo">COO</span>
+      <div class="tc-schedule">納品時</div>
+      <span class="tc-status st-ready">準備完了</span>
+    </div>
+
+    <!-- CMO (6 tasks) -->
+    <div class="task-card tc-pink">
+      <div class="tc-ic">📱</div>
+      <h3>SNS Morning Post</h3>
+      <div class="tc-sub">ローテーション → テンプレ選択 → 類似度チェック → 品質ゲート → 投稿</div>
+      <span class="tc-dept td-cmo">CMO</span>
+      <div class="tc-schedule">毎日 07:30</div>
+      <span class="tc-status st-active">稼働中</span>
+    </div>
+
+    <div class="task-card tc-pink">
+      <div class="tc-ic">📱</div>
+      <h3>SNS Afternoon Post</h3>
+      <div class="tc-sub">別テンプレ・別アングル → 品質ゲート → 午後露出倍増</div>
+      <span class="tc-dept td-cmo">CMO</span>
+      <div class="tc-schedule">毎日 15:00</div>
+      <span class="tc-status st-active">稼働中</span>
+    </div>
+
+    <div class="task-card tc-pink">
+      <div class="tc-ic">💬</div>
+      <h3>SNS Engagement</h3>
+      <div class="tc-sub">同業界アカウント分析 → いいね・リプライ候補自動生成 → フォロワー増加</div>
+      <span class="tc-dept td-cmo">CMO</span>
+      <div class="tc-schedule">毎日 13:00</div>
+      <span class="tc-status st-active">稼働中</span>
+    </div>
+
+    <div class="task-card tc-pink">
+      <div class="tc-ic">🔍</div>
+      <h3>Tech Trend Scout</h3>
+      <div class="tc-sub">Qiita/Zenn/はてブ → 投稿ネタ・学習・案件チャンス検出 → trend_queue.md</div>
+      <span class="tc-dept td-cmo">CMO</span>
+      <div class="tc-schedule">毎日 14:00</div>
+      <span class="tc-status st-active">稼働中</span>
+    </div>
+
+    <div class="task-card tc-pink">
+      <div class="tc-ic">📊</div>
+      <h3>SNS Nightly Collect</h3>
+      <div class="tc-sub">パフォーマンス収集 → バズピボット → 学習ループ → cmo-status.md 更新</div>
+      <span class="tc-dept td-cmo">CMO</span>
+      <div class="tc-schedule">毎日 21:00</div>
+      <span class="tc-status st-active">稼働中</span>
+    </div>
+
+    <div class="task-card tc-pink">
+      <div class="tc-ic">📝</div>
+      <h3>Inbound Content</h3>
+      <div class="tc-sub">note/Qiita/Zenn記事自動生成 → SEO最適化 → 検索流入促進</div>
+      <span class="tc-dept td-cmo">CMO</span>
+      <div class="tc-schedule">週3回</div>
+      <span class="tc-status st-ready">準備完了</span>
+    </div>
+
+    <!-- TODO Morning Picker moved to COO section, so we have 19 -->
+    <div class="task-card tc-green">
+      <div class="tc-ic">✅</div>
+      <h3>Todo Morning Picker</h3>
+      <div class="tc-sub">Todoダッシュボード → 本日タスク選択 → daily_tasks追加 → Cowork自動実行</div>
+      <span class="tc-dept td-coo">COO</span>
+      <div class="tc-schedule">毎日 10:00</div>
+      <span class="tc-status st-active">稼働中</span>
+    </div>
+  </div>
+
+  <!-- ====== 6-MONTH REVENUE ROADMAP (from Revenue_Engine) ====== -->
+  <div class="sec">6-Month Revenue Roadmap — 30万到達プラン</div>
+
+  <div class="roadmap">
+    <div class="rm-month rm-current">
+      <div class="rm-num">MONTH 1</div>
+      <div class="rm-label">評価ブースト</div>
+      <div class="rm-rev rm-rev-green">2-5万</div>
+      <div class="rm-streams">全PF同時起動<br>低単価×件数で★5量産<br>AI Company記事公開<br><strong>目標: 評価8件+</strong></div>
+    </div>
+    <div class="rm-month rm-future">
+      <div class="rm-num">MONTH 2</div>
+      <div class="rm-label">単価シフト</div>
+      <div class="rm-rev rm-rev-gold">5-12万</div>
+      <div class="rm-streams">通常単価に移行<br>ココナラ評価10件↑<br>技術記事→問合せ開始<br><strong>GAS特化ブランド確立</strong></div>
+    </div>
+    <div class="rm-month rm-future">
+      <div class="rm-num">MONTH 3</div>
+      <div class="rm-label">高単価+リテイナー</div>
+      <div class="rm-rev rm-rev-gold">8-18万</div>
+      <div class="rm-streams">高単価案件シフト<br>リテイナー提案開始<br>テンプレ販売開始<br><strong>目標: リテイナー2社</strong></div>
+    </div>
+    <div class="rm-month rm-future">
+      <div class="rm-num">MONTH 4</div>
+      <div class="rm-label">複線化</div>
+      <div class="rm-rev rm-rev-gold">12-22万</div>
+      <div class="rm-streams">リテイナー3社<br>ココナラ値上げ<br>記事シリーズ→指名増<br><strong>応募:指名 = 6:4</strong></div>
+    </div>
+    <div class="rm-month rm-future">
+      <div class="rm-num">MONTH 5</div>
+      <div class="rm-label">指名逆転</div>
+      <div class="rm-rev rm-rev-gold">18-28万</div>
+      <div class="rm-streams">指名が応募を逆転<br>テンプレ月3万安定<br>リテイナー5社<br><strong>応募:指名 = 3:7</strong></div>
+    </div>
+    <div class="rm-month rm-future">
+      <div class="rm-num">MONTH 6</div>
+      <div class="rm-label">月30万</div>
+      <div class="rm-rev rm-rev-gold">22-35万</div>
+      <div class="rm-streams">4収益源安定<br>応募+ココナラ+テンプレ+リテイナー<br><strong>SaaS企画はM8〜</strong></div>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <span class="legend-t">LEGEND</span>
+    <div class="lg"><div class="lg-dot" style="background:#e8a838;"></div>CEO（統括・承認）</div>
+    <div class="lg"><div class="lg-dot" style="background:#9f7aea;"></div>CTO（Cortex — 技術）</div>
+    <div class="lg"><div class="lg-dot" style="background:#48bb78;"></div>COO（オペレーション）</div>
+    <div class="lg"><div class="lg-dot" style="background:#ec407a;"></div>CMO（SNS・マーケ）</div>
+    <div class="lg"><div class="lg-dot" style="background:#4a90d9;"></div>CFO（経理・財務）</div>
+    <div class="lg"><div class="lg-dot" style="background:#ddd;"></div>自動実行（自分介入なし）</div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <span class="d-gold">●</span> AI Company = CEO + 4部門（CTO/COO/CMO/CFO）の自律組織。19タスク。自分の日常作業: ゼロ。
+    <br><span class="d-purple">●</span> CTO = Cortex + Cursor。コード・デプロイ・自己修復。cto-status.md で自動報告。
+    <br><span class="d-green">●</span> COO = 10スケジュールタスク（scanner/drafter/tracker/optimizer/market/coconala/skill-demand/gardener/post-delivery/picker）+ CEO brief統合。
+    <br><span class="d-pink">●</span> CMO = SNS Autopilot v3 + コンテンツ戦略。朝+午後2投稿 × 15テンプレ × バズピボット。6タスク。cmo-status.md。
+    <br><span class="d-blue">●</span> CFO = 経理GASパイプライン + 経理ダッシュボード + freee連携。cfo-status.md。
+    <br><span class="d-gold">●</span> CEO自動承認: 品質80+の応募は自動送信。SNS投稿は完全自動。自分承認は80点未満・価格変更・有料ツールのみ。毎朝7:45 CEO Briefing自動生成。
+    <br><span class="d-orange">●</span> Revenue Loop: 案件発見→応募準備→CEO自動承認→受注・納品→実績化→SNS発信→信頼UP→単価UP → ループ継続。6ヶ月で月3-8万 → 20-35万目指す。
+  </div>
+
+</div>
+</body>
+</html>
